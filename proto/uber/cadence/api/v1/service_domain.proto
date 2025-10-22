@@ -202,6 +202,7 @@ message FailoverEvent {
   // Can be passed with the ID to fetch a specific event.
   google.protobuf.Timestamp created_time = 2;
   FailoverType failover_type = 3;
+  repeated ClusterFailover cluster_failover = 4;
 }
 
 message ClusterFailover {
