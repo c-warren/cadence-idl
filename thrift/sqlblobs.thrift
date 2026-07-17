@@ -204,6 +204,7 @@ struct ChildExecutionInfo {
   30: optional string domainName // deprecated
   32: optional string workflowTypeName
   35: optional i32 parentClosePolicy
+  36: optional i32 priority
 }
 
 struct SignalInfo {
@@ -229,6 +230,7 @@ struct TimerInfo {
   // the purpose of indicating whether a timer task is
   // generated for this timer info
   16: optional i64 (js.type = "Long") taskID
+  18: optional i32 priority
 }
 
 struct TaskInfo {
@@ -276,6 +278,7 @@ struct TransferTaskInfo {
   34: optional set<binary> targetDomainIDs
   36: optional string originalTaskList
   38: optional shared.TaskListKind originalTaskListKind
+  40: optional i32 priority
 }
 
 struct TimerTaskInfo {
@@ -288,6 +291,7 @@ struct TimerTaskInfo {
   22: optional i64 (js.type = "Long") scheduleAttempt
   24: optional i64 (js.type = "Long") eventID
   26: optional string taskList
+  28: optional i32 priority
 }
 
 struct ReplicationTaskInfo {
