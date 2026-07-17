@@ -68,6 +68,9 @@ message ScheduleActivityTaskDecisionAttributes {
 message StartTimerDecisionAttributes {
   string timer_id = 1;
   google.protobuf.Duration start_to_fire_timeout = 2;
+  // priority is a client hint that lets the resulting timer task be executed with
+  // deprioritized (async) scheduling. Optional; defaults to normal execution.
+  TaskPriority priority = 3;
 }
 
 message CompleteWorkflowExecutionDecisionAttributes {
@@ -141,6 +144,9 @@ message StartChildWorkflowExecutionDecisionAttributes {
   SearchAttributes search_attributes = 15;
   CronOverlapPolicy cron_overlap_policy = 16;
   ActiveClusterSelectionPolicy active_cluster_selection_policy = 17;
+  // priority is a client hint that lets the resulting start-child-workflow task be
+  // executed with deprioritized (async) scheduling. Optional; defaults to normal.
+  TaskPriority priority = 18;
 }
 
 message SignalExternalWorkflowExecutionDecisionAttributes {

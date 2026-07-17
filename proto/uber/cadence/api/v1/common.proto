@@ -64,7 +64,6 @@ enum FailureCategory {
   FAILURE_CATEGORY_FATAL = 3;
 }
 
-
 message FailureOptions {
   FailureCategory failure_category = 1;
   // If set, overrides the next retry interval calculated by the RetryPolicy for this failure. This allows activity
@@ -73,7 +72,6 @@ message FailureOptions {
   // and the failure's category.
   google.protobuf.Duration next_retry_interval = 2;
 }
-
 
 message Memo {
   map<string, Payload> fields = 1;
@@ -193,6 +191,28 @@ enum FailoverType {
   FAILOVER_TYPE_INVALID = 0;
   FAILOVER_TYPE_FORCE = 1;
   FAILOVER_TYPE_GRACEFUL = 2;
+}
+
+// TaskPriority is a client-supplied hint about how latency-sensitive the internal
+// tasks produced by a decision are. It lets a client opt work into deprioritized
+// (async) execution so that, under backlog, Cadence yields scheduling capacity to
+// higher-priority work.
+//
+// TASK_PRIORITY_ASYNC is the only value that currently changes server behavior;
+// the HIGH/DEFAULT/LOW values are reserved for future use and are treated like
+// TASK_PRIORITY_INVALID (server default) today.
+enum TaskPriority {
+  // Unset. The server applies its normal runtime-computed priority.
+  TASK_PRIORITY_INVALID = 0;
+  // Reserved for future use. Treated as TASK_PRIORITY_INVALID today.
+  TASK_PRIORITY_HIGH = 1;
+  // Reserved for future use. Treated as TASK_PRIORITY_INVALID today.
+  TASK_PRIORITY_DEFAULT = 2;
+  // Reserved for future use. Treated as TASK_PRIORITY_INVALID today.
+  TASK_PRIORITY_LOW = 3;
+  // Deprioritized (async) execution. Under backlog these tasks yield scheduling
+  // slots to higher-priority work; when workers are idle they still run promptly.
+  TASK_PRIORITY_ASYNC = 4;
 }
 
 // PaginationOptions provides common options for paginated RPCs.

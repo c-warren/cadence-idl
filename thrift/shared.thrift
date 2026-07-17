@@ -163,6 +163,19 @@ enum ParentClosePolicy {
   TERMINATE,
 }
 
+// TaskPriority is a client hint about how latency-sensitive the internal tasks
+// produced by a decision are. TASK_PRIORITY_ASYNC opts work into deprioritized
+// execution so that, under backlog, Cadence yields scheduling capacity to
+// higher-priority work. Only ASYNC changes server behavior today; HIGH/DEFAULT/LOW
+// are reserved and treated like INVALID (server default).
+enum TaskPriority {
+  INVALID = 0,
+  HIGH = 1,
+  DEFAULT = 2,
+  LOW = 3,
+  ASYNC = 4,
+}
+
 
 // whenever this list of decision is changed
 // do change the mutableStateBuilder.go
@@ -481,6 +494,7 @@ struct RequestCancelActivityTaskDecisionAttributes {
 struct StartTimerDecisionAttributes {
   10: optional string timerId
   20: optional i64 (js.type = "Long") startToFireTimeoutSeconds
+  30: optional TaskPriority priority
 }
 
 struct CompleteWorkflowExecutionDecisionAttributes {
@@ -567,6 +581,7 @@ struct StartChildWorkflowExecutionDecisionAttributes {
   150: optional SearchAttributes searchAttributes
   160: optional CronOverlapPolicy cronOverlapPolicy
   170: optional ActiveClusterSelectionPolicy activeClusterSelectionPolicy
+  180: optional TaskPriority priority
 }
 
 struct Decision {
