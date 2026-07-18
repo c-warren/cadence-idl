@@ -52,6 +52,7 @@ message ReplicationTask {
     SyncActivityTaskAttributes sync_activity_task_attributes = 6;
     HistoryTaskV2Attributes history_task_v2_attributes = 7;
     FailoverMarkerAttributes failover_marker_attributes = 8;
+    AsyncWorkflowRequestTaskAttributes async_workflow_request_task_attributes = 9;
   }
 }
 
@@ -102,6 +103,16 @@ message FailoverMarkerAttributes {
   google.protobuf.Timestamp creation_time = 3;
 }
 
+// AsyncWorkflowRequestTaskAttributes carries a history-backed async-workflow
+// request (a serialized AsyncRequestMessage) so it can be replicated to other
+// regions and enqueued into their local async_workflow_queue.
+message AsyncWorkflowRequestTaskAttributes {
+  string queue_name = 1;
+  bytes payload = 2;
+  string encoding = 3;
+  string partition_key = 4;
+}
+
 message FailoverMarkerToken {
   repeated int32 shard_ids = 1;
   FailoverMarkerAttributes failover_marker = 2;
@@ -127,6 +138,7 @@ enum ReplicationTaskType {
   REPLICATION_TASK_TYPE_HISTORY_METADATA = 5;
   REPLICATION_TASK_TYPE_HISTORY_V2 = 6;
   REPLICATION_TASK_TYPE_FAILOVER_MARKER = 7;
+  REPLICATION_TASK_TYPE_ASYNC_WORKFLOW_REQUEST = 8;
 }
 
 enum DomainOperation {
