@@ -2223,6 +2223,80 @@ struct TaskKey {
   20: optional i64 taskID
 }
 
+// HistoryTaskDLQCountEntry is a per-partition count of tasks in a history task DLQ.
+// CountHistoryTaskDLQTasks fans out across shards and returns one entry per matching partition.
+struct HistoryTaskDLQCountEntry {
+  10: optional i32 shardID
+  20: optional string domainID
+  30: optional string clusterAttributeScope
+  40: optional string clusterAttributeName
+  50: optional i32 taskCategory
+  60: optional i64 (js.type = "Long") count
+}
+
+// HistoryTaskDLQAckLevel is the ack level of a single history task DLQ partition.
+struct HistoryTaskDLQAckLevel {
+  10: optional i32 shardID
+  20: optional string domainID
+  30: optional string clusterAttributeScope
+  40: optional string clusterAttributeName
+  50: optional i32 taskCategory
+  60: optional TaskKey ackLevel
+}
+
+// HistoryTaskDLQTask is a single task stored in a history task DLQ partition.
+struct HistoryTaskDLQTask {
+  10: optional string domainID
+  20: optional string clusterAttributeScope
+  30: optional string clusterAttributeName
+  40: optional i32 taskCategory
+  50: optional TaskKey taskKey
+  60: optional binary task
+}
+
+// CountHistoryTaskDLQTasks fans out across shards; the request carries optional filters only.
+struct CountHistoryTaskDLQTasksRequest {
+  10: optional string domainID
+  20: optional string clusterAttributeScope
+  30: optional string clusterAttributeName
+  40: optional i32 taskCategory
+}
+
+struct CountHistoryTaskDLQTasksResponse {
+  10: optional list<HistoryTaskDLQCountEntry> counts
+}
+
+// GetHistoryTaskDLQAckLevels fans out across shards; the request carries optional filters only.
+struct GetHistoryTaskDLQAckLevelsRequest {
+  10: optional string domainID
+  20: optional string clusterAttributeScope
+  30: optional string clusterAttributeName
+  40: optional i32 taskCategory
+}
+
+struct GetHistoryTaskDLQAckLevelsResponse {
+  10: optional list<HistoryTaskDLQAckLevel> ackLevels
+}
+
+// ReadHistoryTaskDLQTasks is targeted at a single shard's partition.
+struct ReadHistoryTaskDLQTasksRequest {
+  10: optional i32 shardID
+  20: optional string domainID
+  30: optional string clusterAttributeScope
+  40: optional string clusterAttributeName
+  // taskCategory is required: it determines how the returned tasks are deserialized.
+  50: optional i32 taskCategory
+  60: optional TaskKey inclusiveMinTaskKey
+  70: optional TaskKey exclusiveMaxTaskKey
+  80: optional i32 maximumPageSize
+  90: optional binary nextPageToken
+}
+
+struct ReadHistoryTaskDLQTasksResponse {
+  10: optional list<HistoryTaskDLQTask> tasks
+  20: optional binary nextPageToken
+}
+
 // ActiveClusterSelectionPolicy is for active-active domains, it serves as a means to select
 // the active cluster, by specifying the attribute by which to divide the workflows
 // in that domain.

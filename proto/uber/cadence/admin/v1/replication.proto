@@ -22,12 +22,12 @@ syntax = "proto3";
 
 package uber.cadence.admin.v1;
 
-option go_package = "github.com/uber/cadence-idl/go/proto/admin/v1;adminv1";
-
 import "google/protobuf/timestamp.proto";
+import "uber/cadence/admin/v1/history.proto";
 import "uber/cadence/api/v1/common.proto";
 import "uber/cadence/api/v1/domain.proto";
-import "uber/cadence/admin/v1/history.proto";
+
+option go_package = "github.com/uber/cadence-idl/go/proto/admin/v1;adminv1";
 
 message ReplicationMessages {
   repeated ReplicationTask replication_tasks = 1;
@@ -37,7 +37,7 @@ message ReplicationMessages {
   int64 last_retrieved_message_id = 2;
 
   // Hint for flow control.
-  bool has_more  = 3;
+  bool has_more = 3;
 
   SyncShardStatus sync_shard_status = 4;
 }
@@ -153,6 +153,45 @@ message HistoryDLQCountEntry {
   int64 count = 1;
   int32 shard_id = 2;
   string source_cluster = 3;
+}
+
+// HistoryTaskDLQTaskKey identifies a task within a history task DLQ partition.
+message HistoryTaskDLQTaskKey {
+  google.protobuf.Timestamp visibility_timestamp = 1;
+  int64 task_id = 2;
+}
+
+// HistoryTaskDLQCountEntry is a per-partition count of tasks in a history task DLQ.
+// CountHistoryTaskDLQTasks fans out across shards and returns one entry per matching
+// partition; the caller sums the counts to get a total length.
+message HistoryTaskDLQCountEntry {
+  int32 shard_id = 1;
+  string domain_id = 2;
+  string cluster_attribute_scope = 3;
+  string cluster_attribute_name = 4;
+  int32 task_category = 5;
+  int64 count = 6;
+}
+
+// HistoryTaskDLQAckLevel is the ack level of a single history task DLQ partition.
+message HistoryTaskDLQAckLevel {
+  int32 shard_id = 1;
+  string domain_id = 2;
+  string cluster_attribute_scope = 3;
+  string cluster_attribute_name = 4;
+  int32 task_category = 5;
+  google.protobuf.Timestamp ack_level_visibility_timestamp = 6;
+  int64 ack_level_task_id = 7;
+}
+
+// HistoryTaskDLQTask is a single task stored in a history task DLQ partition.
+message HistoryTaskDLQTask {
+  string domain_id = 1;
+  string cluster_attribute_scope = 2;
+  string cluster_attribute_name = 3;
+  int32 task_category = 4;
+  HistoryTaskDLQTaskKey task_key = 5;
+  bytes task = 6;
 }
 
 enum DLQType {

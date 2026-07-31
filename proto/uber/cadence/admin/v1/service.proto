@@ -22,17 +22,17 @@ syntax = "proto3";
 
 package uber.cadence.admin.v1;
 
-option go_package = "github.com/uber/cadence-idl/go/proto/admin/v1;adminv1";
-
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
-import "uber/cadence/api/v1/common.proto";
-import "uber/cadence/api/v1/tasklist.proto";
-import "uber/cadence/api/v1/visibility.proto";
 import "uber/cadence/admin/v1/cluster.proto";
 import "uber/cadence/admin/v1/history.proto";
 import "uber/cadence/admin/v1/queue.proto";
 import "uber/cadence/admin/v1/replication.proto";
+import "uber/cadence/api/v1/common.proto";
+import "uber/cadence/api/v1/tasklist.proto";
+import "uber/cadence/api/v1/visibility.proto";
+
+option go_package = "github.com/uber/cadence-idl/go/proto/admin/v1;adminv1";
 
 // AdminAPI provides advanced APIs for debugging and analysis with admin privilege.
 service AdminAPI {
@@ -55,28 +55,28 @@ service AdminAPI {
   rpc ResetQueue(ResetQueueRequest) returns (ResetQueueResponse);
 
   // DescribeQueue describes queue.
-  rpc DescribeQueue(DescribeQueueRequest) returns(DescribeQueueResponse);
+  rpc DescribeQueue(DescribeQueueRequest) returns (DescribeQueueResponse);
 
   // Returns the raw history of specified workflow execution.
   // It fails with 'EntityNotExistError' if specified workflow execution in unknown to the service.
   // StartEventId defines the beginning of the event to fetch. The first event is inclusive.
   // EndEventId and EndEventVersion defines the end of the event to fetch. The end event is exclusive.
-  rpc GetWorkflowExecutionRawHistoryV2(GetWorkflowExecutionRawHistoryV2Request) returns(GetWorkflowExecutionRawHistoryV2Response);
+  rpc GetWorkflowExecutionRawHistoryV2(GetWorkflowExecutionRawHistoryV2Request) returns (GetWorkflowExecutionRawHistoryV2Response);
 
   // GetReplicationMessages returns new replication tasks since the read level provided in the token.
-  rpc GetReplicationMessages(GetReplicationMessagesRequest) returns(GetReplicationMessagesResponse);
+  rpc GetReplicationMessages(GetReplicationMessagesRequest) returns (GetReplicationMessagesResponse);
 
   // GetDLQReplicationMessages return replication messages based on DLQ info.
   rpc GetDLQReplicationMessages(GetDLQReplicationMessagesRequest) returns (GetDLQReplicationMessagesResponse);
 
   // GetDomainReplicationMessages returns new domain replication tasks since last retrieved task id.
-  rpc GetDomainReplicationMessages (GetDomainReplicationMessagesRequest) returns (GetDomainReplicationMessagesResponse);
+  rpc GetDomainReplicationMessages(GetDomainReplicationMessagesRequest) returns (GetDomainReplicationMessagesResponse);
 
   // ReapplyEvents applies stale events to the current workflow and current run.
   rpc ReapplyEvents(ReapplyEventsRequest) returns (ReapplyEventsResponse);
 
   // AddSearchAttribute whitelist search attribute in request.
-  rpc AddSearchAttribute (AddSearchAttributeRequest) returns (AddSearchAttributeResponse);
+  rpc AddSearchAttribute(AddSearchAttributeRequest) returns (AddSearchAttributeResponse);
 
   // DescribeCluster returns information about Cadence cluster.
   rpc DescribeCluster(DescribeClusterRequest) returns (DescribeClusterResponse);
@@ -92,6 +92,15 @@ service AdminAPI {
 
   // MergeDLQMessages merges messages from DLQ.
   rpc MergeDLQMessages(MergeDLQMessagesRequest) returns (MergeDLQMessagesResponse);
+
+  // CountHistoryTaskDLQTasks returns the number of tasks in history task DLQ partitions, fanning out across shards.
+  rpc CountHistoryTaskDLQTasks(CountHistoryTaskDLQTasksRequest) returns (CountHistoryTaskDLQTasksResponse);
+
+  // GetHistoryTaskDLQAckLevels returns the ack levels of history task DLQ partitions, fanning out across shards.
+  rpc GetHistoryTaskDLQAckLevels(GetHistoryTaskDLQAckLevelsRequest) returns (GetHistoryTaskDLQAckLevelsResponse);
+
+  // ReadHistoryTaskDLQTasks returns tasks from a single history task DLQ partition.
+  rpc ReadHistoryTaskDLQTasks(ReadHistoryTaskDLQTasksRequest) returns (ReadHistoryTaskDLQTasksResponse);
 
   // RefreshWorkflowTasks refreshes all tasks of a workflow.
   rpc RefreshWorkflowTasks(RefreshWorkflowTasksRequest) returns (RefreshWorkflowTasksResponse);
@@ -208,8 +217,7 @@ message CloseShardRequest {
   int32 shard_id = 1;
 }
 
-message CloseShardResponse {
-}
+message CloseShardResponse {}
 
 message RemoveTaskRequest {
   int32 shard_id = 1;
@@ -219,8 +227,7 @@ message RemoveTaskRequest {
   string cluster_name = 5;
 }
 
-message RemoveTaskResponse {
-}
+message RemoveTaskResponse {}
 
 message ResetQueueRequest {
   int32 shard_id = 1;
@@ -228,8 +235,7 @@ message ResetQueueRequest {
   TaskType task_type = 3;
 }
 
-message ResetQueueResponse {
-}
+message ResetQueueResponse {}
 
 message DescribeQueueRequest {
   int32 shard_id = 1;
@@ -294,24 +300,21 @@ message ReapplyEventsRequest {
   api.v1.DataBlob events = 3;
 }
 
-message ReapplyEventsResponse {
-}
+message ReapplyEventsResponse {}
 
 message AddSearchAttributeRequest {
   map<string, api.v1.IndexedValueType> search_attribute = 1;
   string security_token = 2;
 }
 
-message AddSearchAttributeResponse {
-}
+message AddSearchAttributeResponse {}
 
-message DescribeClusterRequest {
-}
+message DescribeClusterRequest {}
 
 message DescribeClusterResponse {
   api.v1.SupportedClientVersions supported_client_versions = 1;
   MembershipInfo membership_info = 2;
-  map<string,PersistenceInfo> persistence_info = 3;
+  map<string, PersistenceInfo> persistence_info = 3;
 }
 
 message CountDLQMessagesRequest {
@@ -346,8 +349,7 @@ message PurgeDLQMessagesRequest {
   google.protobuf.Int64Value inclusive_end_message_id = 4;
 }
 
-message PurgeDLQMessagesResponse {
-}
+message PurgeDLQMessagesResponse {}
 
 message MergeDLQMessagesRequest {
   DLQType type = 1;
@@ -362,13 +364,61 @@ message MergeDLQMessagesResponse {
   bytes next_page_token = 1;
 }
 
+// CountHistoryTaskDLQTasks fans out across shards to count tasks in history task DLQ partitions.
+// The queue is partitioned by shard_id, domain_id, cluster_attribute_scope, and cluster_attribute_name.
+message CountHistoryTaskDLQTasksRequest {
+  // The following fields are optional filters. Unset (empty) fields are not applied, so an
+  // empty request counts every history task DLQ partition across all shards.
+  string domain_id = 1;
+  string cluster_attribute_scope = 2;
+  string cluster_attribute_name = 3;
+  int32 task_category = 4;
+}
+
+message CountHistoryTaskDLQTasksResponse {
+  // counts is the per-partition breakdown; sum the entries for the total length.
+  repeated HistoryTaskDLQCountEntry counts = 1;
+}
+
+// GetHistoryTaskDLQAckLevels fans out across shards to fetch history task DLQ ack levels.
+message GetHistoryTaskDLQAckLevelsRequest {
+  // Optional filters, applied the same way as CountHistoryTaskDLQTasksRequest.
+  string domain_id = 1;
+  string cluster_attribute_scope = 2;
+  string cluster_attribute_name = 3;
+  int32 task_category = 4;
+}
+
+message GetHistoryTaskDLQAckLevelsResponse {
+  repeated HistoryTaskDLQAckLevel ack_levels = 1;
+}
+
+// ReadHistoryTaskDLQTasks reads tasks from a single, targeted history task DLQ partition.
+message ReadHistoryTaskDLQTasksRequest {
+  // shard_id is required: reads are targeted at a single shard's partition.
+  int32 shard_id = 1;
+  string domain_id = 2;
+  string cluster_attribute_scope = 3;
+  string cluster_attribute_name = 4;
+  // task_category is required: it determines how the returned tasks are deserialized.
+  int32 task_category = 5;
+  HistoryTaskDLQTaskKey inclusive_min_task_key = 6;
+  HistoryTaskDLQTaskKey exclusive_max_task_key = 7;
+  int32 page_size = 8;
+  bytes next_page_token = 9;
+}
+
+message ReadHistoryTaskDLQTasksResponse {
+  repeated HistoryTaskDLQTask tasks = 1;
+  bytes next_page_token = 2;
+}
+
 message RefreshWorkflowTasksRequest {
   string domain = 1;
   api.v1.WorkflowExecution workflow_execution = 2;
 }
 
-message RefreshWorkflowTasksResponse {
-}
+message RefreshWorkflowTasksResponse {}
 
 message ResendReplicationTasksRequest {
   string domain_id = 1;
@@ -378,8 +428,7 @@ message ResendReplicationTasksRequest {
   VersionHistoryItem end_event = 5;
 }
 
-message ResendReplicationTasksResponse {
-}
+message ResendReplicationTasksResponse {}
 
 message GetCrossClusterTasksRequest {
   repeated int32 shard_ids = 1;
@@ -403,36 +452,34 @@ message RespondCrossClusterTasksCompletedResponse {
 }
 
 /* If get_all is True, then all provided filters are ignored and all values associated with config_name
-will be returned. If get_all is False and no filters are specified (or no filter match), fallback value
-will be returned. If get_all is False and a filter(s) is specified, value that matches filter will be returned.
-If config_name cannot be found in database, default value will be returned. */
+   will be returned. If get_all is False and no filters are specified (or no filter match), fallback value
+   will be returned. If get_all is False and a filter(s) is specified, value that matches filter will be returned.
+   If config_name cannot be found in database, default value will be returned. */
 message GetDynamicConfigRequest {
-	string config_name = 1;
+  string config_name = 1;
   repeated DynamicConfigFilter filters = 2;
 }
 
 message GetDynamicConfigResponse {
-	api.v1.DataBlob value = 1;
+  api.v1.DataBlob value = 1;
 }
 
 /* If filters field is not specified in DynamicConfigValue, value will update fallback value which supersedes
-the default value defined in codebase. */
+   the default value defined in codebase. */
 message UpdateDynamicConfigRequest {
-	string config_name = 1;
-	repeated DynamicConfigValue config_values = 2;
+  string config_name = 1;
+  repeated DynamicConfigValue config_values = 2;
 }
 
-message UpdateDynamicConfigResponse {
-}
+message UpdateDynamicConfigResponse {}
 
 // If no filters are specified, all values associated with config_name will be removed.
 message RestoreDynamicConfigRequest {
-	string config_name = 1;
-	repeated DynamicConfigFilter filters = 2;
+  string config_name = 1;
+  repeated DynamicConfigFilter filters = 2;
 }
 
-message RestoreDynamicConfigResponse {
-}
+message RestoreDynamicConfigResponse {}
 
 message DeleteWorkflowRequest {
   string domain = 1;
@@ -461,7 +508,7 @@ message ListDynamicConfigRequest {
 }
 
 message ListDynamicConfigResponse {
-	repeated DynamicConfigEntry entries = 1;
+  repeated DynamicConfigEntry entries = 1;
 }
 
 message GetOperationalDynamicConfigRequest {
@@ -478,82 +525,79 @@ message UpdateOperationalDynamicConfigRequest {
   repeated DynamicConfigValue config_values = 2;
 }
 
-message UpdateOperationalDynamicConfigResponse {
-}
+message UpdateOperationalDynamicConfigResponse {}
 
 message RestoreOperationalDynamicConfigRequest {
   string config_name = 1;
   repeated DynamicConfigFilter filters = 2;
 }
 
-message RestoreOperationalDynamicConfigResponse {
-}
+message RestoreOperationalDynamicConfigResponse {}
 
 message ListOperationalDynamicConfigRequest {
   string config_name = 1;
 }
 
 message ListOperationalDynamicConfigResponse {
-	repeated DynamicConfigEntry entries = 1;
+  repeated DynamicConfigEntry entries = 1;
 }
 
 message DynamicConfigEntry {
-	string name = 1;
-	repeated DynamicConfigValue values = 3;
+  string name = 1;
+  repeated DynamicConfigValue values = 3;
 }
 
 message DynamicConfigValue {
-	api.v1.DataBlob value = 1;
-	repeated DynamicConfigFilter filters = 2;
+  api.v1.DataBlob value = 1;
+  repeated DynamicConfigFilter filters = 2;
 }
 
 message DynamicConfigFilter {
-	string name = 1;
-	api.v1.DataBlob value = 2;
+  string name = 1;
+  api.v1.DataBlob value = 2;
 }
 
 // Global
-message GetGlobalIsolationGroupsRequest{}
+message GetGlobalIsolationGroupsRequest {}
 
-message GetGlobalIsolationGroupsResponse{
-    api.v1.IsolationGroupConfiguration isolation_groups = 1;
+message GetGlobalIsolationGroupsResponse {
+  api.v1.IsolationGroupConfiguration isolation_groups = 1;
 }
 
-message UpdateGlobalIsolationGroupsRequest{
-    api.v1.IsolationGroupConfiguration isolation_groups = 1;
+message UpdateGlobalIsolationGroupsRequest {
+  api.v1.IsolationGroupConfiguration isolation_groups = 1;
 }
 
-message UpdateGlobalIsolationGroupsResponse{ }
-
+message UpdateGlobalIsolationGroupsResponse {}
 
 // For domains
-message GetDomainIsolationGroupsRequest{
-    string domain = 1;
+message GetDomainIsolationGroupsRequest {
+  string domain = 1;
 }
 
-message GetDomainIsolationGroupsResponse{
-    api.v1.IsolationGroupConfiguration isolation_groups = 1;
+message GetDomainIsolationGroupsResponse {
+  api.v1.IsolationGroupConfiguration isolation_groups = 1;
 }
 
-message UpdateDomainIsolationGroupsRequest{
-    string domain = 1;
-    api.v1.IsolationGroupConfiguration isolation_groups = 2;
+message UpdateDomainIsolationGroupsRequest {
+  string domain = 1;
+  api.v1.IsolationGroupConfiguration isolation_groups = 2;
 }
 
-message UpdateDomainIsolationGroupsResponse{}
+message UpdateDomainIsolationGroupsResponse {}
 
 // Async workflow configuration request/response payloads
 message GetDomainAsyncWorkflowConfiguratonRequest {
-    string domain = 1;
+  string domain = 1;
 }
 
 message GetDomainAsyncWorkflowConfiguratonResponse {
-    api.v1.AsyncWorkflowConfiguration configuration = 1;
+  api.v1.AsyncWorkflowConfiguration configuration = 1;
 }
 
 message UpdateDomainAsyncWorkflowConfiguratonRequest {
-    string domain = 1;
-    api.v1.AsyncWorkflowConfiguration configuration = 2;
+  string domain = 1;
+  api.v1.AsyncWorkflowConfiguration configuration = 2;
 }
 
 message UpdateDomainAsyncWorkflowConfiguratonResponse {}

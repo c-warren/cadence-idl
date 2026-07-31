@@ -186,6 +186,39 @@ service AdminService {
     )
 
   /**
+  * CountHistoryTaskDLQTasks returns the number of tasks in a history task DLQ partition
+  **/
+  shared.CountHistoryTaskDLQTasksResponse CountHistoryTaskDLQTasks(1: shared.CountHistoryTaskDLQTasksRequest request)
+    throws (
+      1: shared.BadRequestError badRequestError,
+      2: shared.InternalServiceError internalServiceError,
+      3: shared.ServiceBusyError serviceBusyError,
+      4: shared.EntityNotExistsError entityNotExistError,
+    )
+
+  /**
+  * GetHistoryTaskDLQAckLevels returns the ack levels of history task DLQ partitions
+  **/
+  shared.GetHistoryTaskDLQAckLevelsResponse GetHistoryTaskDLQAckLevels(1: shared.GetHistoryTaskDLQAckLevelsRequest request)
+    throws (
+      1: shared.BadRequestError badRequestError,
+      2: shared.InternalServiceError internalServiceError,
+      3: shared.ServiceBusyError serviceBusyError,
+      4: shared.EntityNotExistsError entityNotExistError,
+    )
+
+  /**
+  * ReadHistoryTaskDLQTasks returns tasks from a history task DLQ partition
+  **/
+  shared.ReadHistoryTaskDLQTasksResponse ReadHistoryTaskDLQTasks(1: shared.ReadHistoryTaskDLQTasksRequest request)
+    throws (
+      1: shared.BadRequestError badRequestError,
+      2: shared.InternalServiceError internalServiceError,
+      3: shared.ServiceBusyError serviceBusyError,
+      4: shared.EntityNotExistsError entityNotExistError,
+    )
+
+  /**
   * RefreshWorkflowTasks refreshes all tasks of a workflow
   **/
   void RefreshWorkflowTasks(1: shared.RefreshWorkflowTasksRequest request)
