@@ -18,6 +18,28 @@ jobs:
       - name: Regenerate Proto code
         run: make proto-go
 
+      - name: Debug raw generator output
+        run: |
+          set -x
+          go version
+          go version -m .bin/protoc-gen-gogofast | head -8
+          find ./proto/uber/cadence/admin/v1/ ./proto/uber/cadence/api/v1/ -name '*.proto'
+          grep -n -B2 -A4 "assigned to DescribeBy" go/proto/api/v1/service_domain.pb.go | cat -A
+          GOGO="$(go env GOMODCACHE)/github.com/gogo/protobuf@v1.3.2"
+          cp -r "$GOGO" /tmp/gogo && chmod -R u+w /tmp/gogo
+          sed -i 's|^\toriginal := g.Bytes()$|\toriginal := g.Bytes()\n\t_ = os.WriteFile("/tmp/raw-"+strings.ReplaceAll(*g.file.Name, "/", "_")+".txt", original, 0644)|' /tmp/gogo/protoc-gen-gogo/generator/generator.go
+          grep -n "raw-" /tmp/gogo/protoc-gen-gogo/generator/generator.go
+          go mod edit -replace github.com/gogo/protobuf=/tmp/gogo
+          rm -f .bin/protoc-gen-gogofast
+          GOFLAGS=-mod=mod make proto-go
+          ls -la /tmp/raw-*
+          echo "=== RAW service_domain DescribeBy"
+          grep -n -B3 -A4 "assigned to DescribeBy" /tmp/raw-uber_cadence_api_v1_service_domain.proto.txt | cat -A
+          echo "=== RAW history HistoryEvent Attributes (control)"
+          grep -n -B3 -A3 "assigned to Attributes" /tmp/raw-uber_cadence_api_v1_history.proto.txt | head -8 | cat -A
+          echo "=== REGENERATED service_domain DescribeBy (patched plugin)"
+          grep -n -B2 -A4 "assigned to DescribeBy" go/proto/api/v1/service_domain.pb.go | cat -A
+
       - name: Proto lint
         run: make proto-lint
 
